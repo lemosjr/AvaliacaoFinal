@@ -24,10 +24,11 @@ class TableWidget(QWidget):
     # Sinal emitido quando uma ação é acionada
     action_triggered = pyqtSignal(str, dict)
 
-    def __init__(self, headers: list, parent=None):
+    def __init__(self, headers: list, display_headers: list = None, parent=None):
         super().__init__(parent)
 
-        self.headers = headers
+        self.headers = headers  # chaves do dict
+        self.display_headers = display_headers or headers  # labels visíveis
         self.data = []
         self.actions = {}
         self.id_field = 'id'
@@ -50,9 +51,10 @@ class TableWidget(QWidget):
         self.search_input.setStyleSheet("""
             QLineEdit {
                 padding: 8px 12px;
-                border: 1px solid #dcdde1;
+                border: 1px solid #4a6278;
                 border-radius: 6px;
-                background-color: white;
+                background-color: #34495e;
+                color: #ecf0f1;
                 min-width: 200px;
             }
             QLineEdit:focus {
@@ -76,8 +78,8 @@ class TableWidget(QWidget):
 
         # ===== TABLE =====
         self.table = QTableWidget()
-        self.table.setColumnCount(len(self.headers))
-        self.table.setHorizontalHeaderLabels(self.headers)
+        self.table.setColumnCount(len(self.display_headers))
+        self.table.setHorizontalHeaderLabels(self.display_headers)
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
@@ -88,24 +90,29 @@ class TableWidget(QWidget):
         # Estilo
         self.table.setStyleSheet("""
             QTableWidget {
-                background-color: white;
-                border: 1px solid #dcdde1;
+                background-color: #34495e;
+                border: 1px solid #4a6278;
                 border-radius: 6px;
-                gridline-color: #ecf0f1;
+                gridline-color: #4a6278;
+                color: #ecf0f1;
             }
             QTableWidget::item {
                 padding: 8px;
+                color: #ecf0f1;
+            }
+            QTableWidget::item:alternate {
+                background-color: #2c3e50;
             }
             QTableWidget::item:selected {
                 background-color: #3498db;
                 color: white;
             }
             QHeaderView::section {
-                background-color: #f8f9fa;
+                background-color: #2c3e50;
                 padding: 8px;
                 border: none;
                 font-weight: bold;
-                color: #2c3e50;
+                color: #ecf0f1;
             }
         """)
 
@@ -116,7 +123,7 @@ class TableWidget(QWidget):
         # ===== FOOTER =====
         footer = QHBoxLayout()
         self.row_count_label = QLabel("0 registros")
-        self.row_count_label.setStyleSheet("color: #7f8c8d; font-size: 12px;")
+        self.row_count_label.setStyleSheet("color: #95a5a6; font-size: 12px;")
         footer.addWidget(self.row_count_label)
         footer.addStretch()
         layout.addLayout(footer)
@@ -136,23 +143,15 @@ class TableWidget(QWidget):
     def _populate_table(self, data: list):
         """Popula a tabela com os dados."""
         self.table.setRowCount(len(data))
-        self.table.setColumnCount(len(self.headers))
+        self.table.setColumnCount(len(self.display_headers))
 
         for row, item in enumerate(data):
-            for col, header in enumerate(self.headers):
-                key = header.lower().replace(' ', '_')
+            for col, key in enumerate(self.headers):
                 value = item.get(key, '')
 
-                # Tratamento especial para status
-                if key == 'status' and value:
-                    # Cria um StatusBadge embutido
-                    badge = StatusBadge(value)
-                    self.table.setCellWidget(row, col, badge)
-                else:
-                    # Texto normal
-                    table_item = QTableWidgetItem(str(value))
-                    table_item.setData(Qt.ItemDataRole.UserRole, item.get(self.id_field))
-                    self.table.setItem(row, col, table_item)
+                table_item = QTableWidgetItem(str(value))
+                table_item.setData(Qt.ItemDataRole.UserRole, item.get(self.id_field))
+                self.table.setItem(row, col, table_item)
 
         self.row_count_label.setText(f"{len(data)} registros")
 

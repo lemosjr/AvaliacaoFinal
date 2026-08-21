@@ -38,7 +38,7 @@ class OrderWidget(QFrame):
         header_layout = QHBoxLayout()
 
         id_label = QLabel(f"Pedido #{self.order_data.get('id', 'N/A')}")
-        id_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #2c3e50;")
+        id_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #ecf0f1;")
         header_layout.addWidget(id_label)
 
         header_layout.addStretch()
@@ -53,7 +53,7 @@ class OrderWidget(QFrame):
         # ===== CLIENTE =====
         customer = self.order_data.get('customer', 'Cliente')
         customer_label = QLabel(f"👤 {customer}")
-        customer_label.setStyleSheet("font-size: 14px; color: #34495e;")
+        customer_label.setStyleSheet("font-size: 14px; color: #bdc3c7;")
         layout.addWidget(customer_label)
 
         # ===== TOTAL =====
@@ -93,13 +93,12 @@ class OrderWidget(QFrame):
         """Aplica estilos ao widget."""
         self.setStyleSheet("""
             QFrame {
-                background-color: white;
-                border: 1px solid #ecf0f1;
+                background-color: #34495e;
+                border: 1px solid #4a6278;
                 border-radius: 12px;
             }
             QFrame:hover {
                 border-color: #3498db;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             }
         """)
 

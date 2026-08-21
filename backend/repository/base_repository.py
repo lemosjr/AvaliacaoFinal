@@ -185,12 +185,14 @@ class BaseRepository(Generic[T]):
         """
         
         try:
+            new_id = None
             with db.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(query, values)
                     new_id = cur.fetchone()[0]
-                    # get_connection commits automatically on exit
-                    return self.get_by_id(new_id)
+            return self.get_by_id(new_id)
+        except DatabaseError:
+            raise
         except Exception as e:
             logger.error(f"Error creating record in {self.table_name}: {str(e)}")
             raise DatabaseError(f"Failed to create record: {str(e)}")
@@ -241,8 +243,7 @@ class BaseRepository(Generic[T]):
                             resource=self.model_class.__name__,
                             identifier=record_id
                         )
-                    # get_connection commits automatically on exit
-                    return self.get_by_id(record_id)
+            return self.get_by_id(record_id)
         except NotFoundError:
             raise
         except Exception as e:

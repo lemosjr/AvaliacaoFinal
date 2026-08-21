@@ -33,9 +33,9 @@ class OrderItem:
         self.id = id
         self.order_id = order_id
         self.product_id = product_id
-        self.quantity = quantity
-        self.unit_price = unit_price
-        self.subtotal = subtotal or (quantity * unit_price)
+        self.quantity = int(quantity) if quantity is not None else 0
+        self.unit_price = float(unit_price) if unit_price is not None else 0.0
+        self.subtotal = float(subtotal) if subtotal else float(self.quantity * self.unit_price)
     
     def calculate_subtotal(self) -> float:
         """
