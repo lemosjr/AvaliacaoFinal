@@ -75,7 +75,7 @@ class ProductController:
             NotFoundError: If product not found
         """
         try:
-            product = self.product_service.get_product_by_id(product_id)
+            product = self.product_service.get_product(product_id)
             if not product:
                 raise NotFoundError('Product', product_id)
 
@@ -99,7 +99,7 @@ class ProductController:
             Dict with list of products
         """
         try:
-            products = self.product_service.list_products(user_id=user_id)
+            products = self.product_service.get_all_products(user_id=user_id)
             return {
                 'success': True,
                 'products': [p.to_dict() for p in products],
@@ -133,8 +133,7 @@ class ProductController:
             # 2. Call service
             product = self.product_service.update_product(
                 product_id=product_id,
-                user_id=user_id,
-                **validated
+                data=validated
             )
 
             logger.info(f"Product updated: {product.description} (ID: {product.id}) by user {user_id}")
@@ -167,7 +166,7 @@ class ProductController:
             AuthorizationError: If user doesn't own the product
         """
         try:
-            self.product_service.delete_product(product_id=product_id, user_id=user_id)
+            self.product_service.delete_product(product_id=product_id)
             logger.info(f"Product deleted: ID {product_id} by user {user_id}")
             return {'success': True, 'message': 'Product deleted successfully'}
 
@@ -190,7 +189,7 @@ class ProductController:
             Dict with availability info
         """
         try:
-            product = self.product_service.get_product_by_id(product_id)
+            product = self.product_service.get_product(product_id)
             if not product:
                 raise NotFoundError('Product', product_id)
 

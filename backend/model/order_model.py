@@ -11,13 +11,13 @@ from enum import Enum
 
 class OrderStatus(str, Enum):
     """
-    Valid order statuses.
-    Orders follow a lifecycle: CREATED -> PROCESSING -> FINALIZED (or CANCELED)
+    Valid order statuses (values must match the database CHECK constraint).
+    Orders follow a lifecycle: created -> processing -> completed (or cancelled).
     """
-    CREATED = 'criado'
-    PROCESSING = 'em_processamento'
-    FINALIZED = 'finalizado'
-    CANCELED = 'cancelado'
+    CREATED = 'created'
+    PROCESSING = 'processing'
+    COMPLETED = 'completed'
+    CANCELLED = 'cancelled'
     
     @classmethod
     def get_valid_transitions(cls, current_status: str) -> List[str]:
@@ -31,10 +31,10 @@ class OrderStatus(str, Enum):
             List[str]: List of valid next statuses
         """
         transitions = {
-            cls.CREATED.value: [cls.PROCESSING.value, cls.CANCELED.value],
-            cls.PROCESSING.value: [cls.FINALIZED.value, cls.CANCELED.value],
-            cls.FINALIZED.value: [],
-            cls.CANCELED.value: []
+            cls.CREATED.value: [cls.PROCESSING.value, cls.CANCELLED.value],
+            cls.PROCESSING.value: [cls.COMPLETED.value, cls.CANCELLED.value],
+            cls.COMPLETED.value: [],
+            cls.CANCELLED.value: []
         }
         return transitions.get(current_status, [])
     
@@ -60,9 +60,9 @@ class Order:
     
     Attributes:
         id: Unique identifier
-        client: Customer name
+        customer: Customer name
         status: Current order status (OrderStatus)
-        total_value: Total order value (sum of items)
+        total_amount: Total order amount (sum of items)
         user_id: ID of the user who created this order
         created_at: Creation timestamp
         updated_at: Last update timestamp
@@ -72,18 +72,18 @@ class Order:
     def __init__(
         self,
         id: Optional[int] = None,
-        client: str = '',
+        customer: str = '',
         status: str = OrderStatus.CREATED.value,
-        total_value: float = 0.0,
+        total_amount: float = 0.0,
         user_id: Optional[int] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
         items: Optional[List['OrderItem']] = None
     ):
         self.id = id
-        self.client = client
+        self.customer = customer
         self.status = status
-        self.total_value = total_value
+        self.total_amount = total_amount
         self.user_id = user_id
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()
@@ -99,7 +99,7 @@ class Order:
         Raises:
             ValueError: If order is finalized or canceled
         """
-        if self.status in [OrderStatus.FINALIZED.value, OrderStatus.CANCELED.value]:
+        if self.status in [OrderStatus.COMPLETED.value, OrderStatus.CANCELLED.value]:
             raise ValueError(f"Cannot add items to a {self.status} order")
         
         self.items.append(item)
@@ -117,7 +117,7 @@ class Order:
             ValueError: If order is finalized or canceled
             ValueError: If item not found
         """
-        if self.status in [OrderStatus.FINALIZED.value, OrderStatus.CANCELED.value]:
+        if self.status in [OrderStatus.COMPLETED.value, OrderStatus.CANCELLED.value]:
             raise ValueError(f"Cannot remove items from a {self.status} order")
         
         for i, item in enumerate(self.items):
@@ -131,9 +131,9 @@ class Order:
     
     def _recalculate_total(self) -> None:
         """
-        Recalculates total_value based on items.
+        Recalculates total_amount based on items.
         """
-        self.total_value = sum(item.subtotal for item in self.items)
+        self.total_amount = sum(item.subtotal for item in self.items)
     
     def change_status(self, new_status: str) -> None:
         """
@@ -154,7 +154,7 @@ class Order:
             )
         
         # Business rule: Can't finalize without items
-        if new_status == OrderStatus.FINALIZED.value and not self.items:
+        if new_status == OrderStatus.COMPLETED.value and not self.items:
             raise ValueError("Cannot finalize order without items")
         
         self.status = new_status
@@ -178,9 +178,9 @@ class Order:
         """
         return {
             'id': self.id,
-            'client': self.client,
+            'customer': self.customer,
             'status': self.status,
-            'total_value': self.total_value,
+            'total_amount': self.total_amount,
             'user_id': self.user_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
@@ -193,9 +193,9 @@ class Order:
         """
         return {
             'id': self.id,
-            'client': self.client,
+            'customer': self.customer,
             'status': self.status,
-            'total_value': self.total_value,
+            'total_amount': self.total_amount,
             'user_id': self.user_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
@@ -211,16 +211,16 @@ class Order:
         """
         return cls(
             id=data.get('id'),
-            client=data.get('client', ''),
+            customer=data.get('customer', ''),
             status=data.get('status', OrderStatus.CREATED.value),
-            total_value=float(data.get('total_value', 0.0)),
+            total_amount=float(data.get('total_amount', 0.0)),
             user_id=data.get('user_id'),
             created_at=data.get('created_at'),
             updated_at=data.get('updated_at')
         )
     
     def __repr__(self) -> str:
-        return f"<Order(id={self.id}, client='{self.client}', status='{self.status}', total={self.total_value})>"
+        return f"<Order(id={self.id}, customer='{self.customer}', status='{self.status}', total={self.total_amount})>"
     
     def __str__(self) -> str:
-        return f"Order #{self.id} - {self.client} - {self.status} - ${self.total_value:.2f}"
+        return f"Order #{self.id} - {self.customer} - {self.status} - ${self.total_amount:.2f}"
