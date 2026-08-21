@@ -189,9 +189,7 @@ class BaseRepository(Generic[T]):
                 with conn.cursor() as cur:
                     cur.execute(query, values)
                     new_id = cur.fetchone()[0]
-                    conn.commit()
-                    
-                    # Fetch the newly created record
+                    # get_connection commits automatically on exit
                     return self.get_by_id(new_id)
         except Exception as e:
             logger.error(f"Error creating record in {self.table_name}: {str(e)}")
@@ -243,9 +241,7 @@ class BaseRepository(Generic[T]):
                             resource=self.model_class.__name__,
                             identifier=record_id
                         )
-                    conn.commit()
-                    
-                    # Fetch the updated record
+                    # get_connection commits automatically on exit
                     return self.get_by_id(record_id)
         except NotFoundError:
             raise
@@ -276,8 +272,7 @@ class BaseRepository(Generic[T]):
                 with conn.cursor() as cur:
                     cur.execute(query, (record_id,))
                     affected = cur.rowcount
-                    conn.commit()
-                    
+                    # get_connection commits automatically on exit
                     if affected == 0:
                         raise NotFoundError(
                             resource=self.model_class.__name__,

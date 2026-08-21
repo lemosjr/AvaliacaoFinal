@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional
 
 from backend.service.order_service import OrderService
 from backend.validation.order_validator import OrderValidator
+from backend.utils.validators import validate_enum_value
 from backend.utils.exceptions import (
     ValidationError,
     NotFoundError,
@@ -45,12 +46,19 @@ class OrderController:
             # 1. Validate input
             validated = OrderValidator.validate_create({**data, 'user_id': user_id})
 
-            # 2. Call service
+            # 2. Create the order
             order = self.order_service.create_order(
                 customer=validated['customer'],
-                items=validated['items'],
                 user_id=validated['user_id']
             )
+
+            # 3. Add the requested items
+            for item in validated['items']:
+                order = self.order_service.add_item_to_order(
+                    order_id=order.id,
+                    product_id=item['product_id'],
+                    quantity=item['quantity']
+                )
 
             logger.info(f"Order created: ID {order.id} for customer {order.customer} by user {user_id}")
 
@@ -80,7 +88,7 @@ class OrderController:
             NotFoundError: If order not found
         """
         try:
-            order = self.order_service.get_order_by_id(order_id)
+            order = self.order_service.get_order(order_id)
             if not order:
                 raise NotFoundError('Order', order_id)
 
@@ -107,9 +115,15 @@ class OrderController:
         try:
             if status:
                 # Validate status
-                OrderValidator.validate_enum_value(status, OrderValidator.VALID_STATUSES, 'Status')
+                validate_enum_value(status, OrderValidator.VALID_STATUSES, 'Status')
 
-            orders = self.order_service.list_orders(user_id=user_id, status=status)
+            if status:
+                orders = self.order_service.get_orders_by_status(status)
+            elif user_id:
+                orders = self.order_service.get_orders_by_user(user_id)
+            else:
+                orders = self.order_service.get_all_orders()
+
             return {
                 'success': True,
                 'orders': [o.to_dict() for o in orders],
@@ -148,8 +162,7 @@ class OrderController:
             order = self.order_service.add_item_to_order(
                 order_id=order_id,
                 product_id=validated['product_id'],
-                quantity=validated['quantity'],
-                user_id=user_id
+                quantity=validated['quantity']
             )
 
             logger.info(f"Item added to order {order_id} by user {user_id}")
@@ -188,10 +201,9 @@ class OrderController:
             validated = OrderValidator.validate_status(data)
 
             # 2. Call service
-            order = self.order_service.update_order_status(
+            order = self.order_service.change_order_status(
                 order_id=order_id,
-                new_status=validated['status'],
-                user_id=user_id
+                new_status=validated['status']
             )
 
             logger.info(f"Order {order_id} status updated to '{order.status}' by user {user_id}")
@@ -223,7 +235,7 @@ class OrderController:
             NotFoundError: If order not found
         """
         try:
-            total = self.order_service.calculate_order_total(order_id=order_id, user_id=user_id)
+            total = self.order_service.calculate_total(order_id=order_id)
             return {
                 'success': True,
                 'order_id': order_id,
@@ -252,13 +264,13 @@ class OrderController:
             StateError: If order cannot be deleted
         """
         try:
-            self.order_service.delete_order(order_id=order_id, user_id=user_id)
-            logger.info(f"Order {order_id} deleted by user {user_id}")
-            return {'success': True, 'message': 'Order deleted successfully'}
+            self.order_service.cancel_order(order_id=order_id)
+            logger.info(f"Order {order_id} cancelled by user {user_id}")
+            return {'success': True, 'message': 'Order cancelled successfully'}
 
         except (NotFoundError, StateError) as e:
-            logger.warning(f"Delete order {order_id} failed: {str(e)}")
+            logger.warning(f"Cancel order {order_id} failed: {str(e)}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error deleting order {order_id}: {str(e)}")
-            raise AppException("Failed to delete order")
+            logger.error(f"Unexpected error cancelling order {order_id}: {str(e)}")
+            raise AppException("Failed to cancel order")

@@ -66,7 +66,6 @@ class OrderItemRepository(BaseRepository[OrderItem]):
                 with conn.cursor() as cur:
                     cur.execute(query, (order_id,))
                     deleted_count = cur.rowcount
-                    conn.commit()
                     return deleted_count
         except Exception as e:
             logger.error(f"Error deleting items for order {order_id}: {str(e)}")
@@ -153,7 +152,6 @@ class OrderItemRepository(BaseRepository[OrderItem]):
                         row_dict = dict(zip(col_names, row))
                         created_items.append(self._from_dict(row_dict))
                     
-                    conn.commit()
                     return created_items
         except Exception as e:
             logger.error(f"Error creating multiple order items: {str(e)}")
@@ -180,7 +178,6 @@ class OrderItemRepository(BaseRepository[OrderItem]):
             with db.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(query, (order_id,))
-                    conn.commit()
                     return True
         except Exception as e:
             logger.error(f"Error updating subtotals for order {order_id}: {str(e)}")

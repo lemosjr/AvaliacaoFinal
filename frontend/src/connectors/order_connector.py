@@ -41,16 +41,13 @@ class OrderConnector(BaseConnector):
 
         result = self._handle_error(
             self.controller.create_order,
-            {
-                'customer': customer,
-                'items': items
-            },
+            {'customer': customer, 'items': items},
             user_id
         )
 
         if result['success']:
-            event_bus.emit('order_created', result['data']['order'])
-            logger.info(f"Order created: {result['data']['order']['id']}")
+            event_bus.emit('order_created', result['data'].get('order', result['data']))
+            logger.info(f"Order created successfully")
 
         return result
 
@@ -86,12 +83,12 @@ class OrderConnector(BaseConnector):
 
         result = self._handle_error(
             self.controller.list_orders,
-            user_id,
-            status
+            user_id=user_id,
+            status=status
         )
 
         if result['success']:
-            event_bus.emit('orders_loaded', result['data']['orders'])
+            event_bus.emit('orders_loaded', result['data'].get('orders', []))
 
         return result
 
@@ -121,7 +118,7 @@ class OrderConnector(BaseConnector):
         )
 
         if result['success']:
-            event_bus.emit('order_updated', result['data']['order'])
+            event_bus.emit('order_updated', result['data'].get('order', result['data']))
             logger.info(f"Item added to order {order_id}")
 
         return result
@@ -153,7 +150,7 @@ class OrderConnector(BaseConnector):
             event_bus.emit('order_status_changed', {
                 'order_id': order_id,
                 'new_status': status,
-                'order': result['data']['order']
+                'order': result['data'].get('order', result['data'])
             })
             logger.info(f"Order {order_id} status updated to {status}")
 

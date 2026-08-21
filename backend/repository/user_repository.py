@@ -66,10 +66,10 @@ class UserRepository(BaseRepository[User]):
         """
         
         try:
+            from backend.config.database import db
             with db.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(query, (user_id,))
-                    conn.commit()
                     return True
         except Exception as e:
             logger.error(f"Error updating last_login for user {user_id}: {str(e)}")
@@ -130,6 +130,7 @@ class UserRepository(BaseRepository[User]):
         """
         
         try:
+            from backend.config.database import db
             with db.get_cursor(dict_cursor=True) as cur:
                 cur.execute(query)
                 return cur.fetchall()

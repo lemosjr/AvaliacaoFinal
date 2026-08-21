@@ -350,14 +350,14 @@ class MainWindow(QMainWindow):
             # Total de produtos
             products_result = self.product_connector.list_products()
             if products_result['success']:
-                products = products_result['data']['products']
+                products = products_result['data'].get('products', [])
                 total_products = len(products)
                 self._update_stat_card("Total Produtos", str(total_products))
 
             # Total de pedidos
             orders_result = self.order_connector.list_orders()
             if orders_result['success']:
-                orders = orders_result['data']['orders']
+                orders = orders_result['data'].get('orders', [])
                 total_orders = len(orders)
                 self._update_stat_card("Total Pedidos", str(total_orders))
 
@@ -387,7 +387,7 @@ class MainWindow(QMainWindow):
         try:
             result = self.order_connector.list_orders()
             if result['success']:
-                orders = result['data']['orders'][:limit]
+                orders = result['data'].get('orders', [])[:limit]
                 data = []
                 for order in orders:
                     data.append({
@@ -406,7 +406,7 @@ class MainWindow(QMainWindow):
         try:
             result = self.product_connector.list_products()
             if result['success']:
-                products = result['data']['products'][:limit]
+                products = result['data'].get('products', [])[:limit]
 
                 # Limpa o grid
                 for i in reversed(range(self.recent_products_grid.count())):
@@ -437,7 +437,7 @@ class MainWindow(QMainWindow):
         try:
             result = self.product_connector.list_products()
             if result['success']:
-                products = result['data']['products']
+                products = result['data'].get('products', [])
                 data = []
                 for product in products:
                     data.append({
@@ -458,7 +458,7 @@ class MainWindow(QMainWindow):
         try:
             result = self.order_connector.list_orders()
             if result['success']:
-                orders = result['data']['orders']
+                orders = result['data'].get('orders', [])
                 data = []
                 for order in orders:
                     data.append({
@@ -528,7 +528,7 @@ class MainWindow(QMainWindow):
 
     def open_add_item_to_order(self, order_id: int):
         """Abre o diálogo para adicionar item a um pedido."""
-        dialog = AddItemDialog(self.order_connector, self.product_connector, order_id, self)
+        dialog = AddItemDialog(order_id, self.order_connector, self.product_connector, self)
         if dialog.exec():
             self.load_orders()
             self.load_dashboard_data()

@@ -31,9 +31,13 @@ class BaseConnector:
         try:
             result = func(*args, **kwargs)
 
-            # Se o resultado já for um dict com 'success', retorna diretamente
+            # Se o resultado já for um dict com 'success', normaliza para {'success', 'data'}
             if isinstance(result, dict) and 'success' in result:
-                return result
+                success = result.pop('success')
+                if success:
+                    return {'success': True, 'data': result}
+                else:
+                    return {'success': False, **result}
 
             # Caso contrário, embrulha em um dict de sucesso
             return {'success': True, 'data': result}

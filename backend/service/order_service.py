@@ -9,9 +9,7 @@ from decimal import Decimal
 
 from backend.repository.order_repository import OrderRepository
 from backend.repository.order_item_repository import OrderItemRepository
-from backend.repository.product_repository import ProductRepository
-from backend.model.order_model import Order, OrderItem
-from backend.model.product_model import Product
+from backend.model.order_model import Order
 from backend.service.validation_service import ValidationService
 from backend.service.state_service import StateService
 from backend.service.product_service import ProductService
@@ -36,13 +34,13 @@ class OrderService:
         """
         validated = self.validator.validate_order_creation(customer, user_id)
         
-        order = Order(
-            customer=validated['customer'],
-            user_id=validated['user_id'],
-            status='created'
-        )
-        
-        created = self.order_repo.create(order)
+        # Only the real database columns are sent for insertion.
+        created = self.order_repo.create({
+            'customer': validated['customer'],
+            'user_id': validated['user_id'],
+            'status': 'created',
+            'total_amount': 0.0
+        })
         logger.info(f"Order created: {created.id} for customer {created.customer}")
         return created
 
@@ -50,9 +48,11 @@ class OrderService:
         """
         Gets an order by ID with its items.
         """
-        order = self.order_repo.get_by_id_with_items(order_id)
+        order = self.order_repo.get_by_id(order_id)
         if not order:
             raise NotFoundError("Order", order_id)
+        # Load items into the order object
+        order.items = self.order_item_repo.get_by_order(order_id)
         return order
 
     def get_orders_by_user(self, user_id: int) -> List[Order]:
@@ -65,7 +65,7 @@ class OrderService:
         """
         Gets all orders.
         """
-        return self.order_repo.get_all_with_items()
+        return self.order_repo.get_all()
 
     def add_item_to_order(self, order_id: int, product_id: int, quantity: int) -> Order:
         """
@@ -106,15 +106,14 @@ class OrderService:
         # New item: reserve stock
         self.product_service.reserve_stock(product_id, qty)
         
-        # Create order item
-        order_item = OrderItem(
-            order_id=order_id,
-            product_id=product_id,
-            quantity=qty,
-            unit_price=product.price,
-            subtotal=qty * product.price
-        )
-        self.order_item_repo.create(order_item)
+        # Create order item (only real database columns)
+        self.order_item_repo.create({
+            'order_id': order_id,
+            'product_id': product_id,
+            'quantity': qty,
+            'unit_price': float(product.price),
+            'subtotal': float(qty * product.price)
+        })
         logger.info(f"Added item to order {order_id}: product {product_id}, qty {qty}")
         
         # Recalculate total
@@ -186,10 +185,10 @@ class OrderService:
         Calculates and updates the order total.
         """
         items = self.order_item_repo.get_by_order(order_id)
-        total = sum(item.subtotal for item in items)
+        total = float(sum(item.subtotal for item in items))
         
-        # Update order total
-        self.order_repo.update_total(order_id, total)
+        # Update order total (recalculates from items in the database)
+        self.order_repo.update_total_amount(order_id)
         logger.debug(f"Order {order_id} total updated: {total}")
         return total
 
@@ -245,7 +244,7 @@ class OrderService:
             'items': [item.to_dict() for item in items],
             'item_count': len(items),
             'total_quantity': sum(item.quantity for item in items),
-            'total_value': order.total_amount
+            'total_amount': order.total_amount
         }
 
     def get_orders_by_status(self, status: str) -> List[Order]:
@@ -258,4 +257,4 @@ class OrderService:
         """
         Gets order history for a user.
         """
-        return self.order_repo.get_by_user(user_id, include_cancelled=True)
+        return self.order_repo.get_by_user(user_id)

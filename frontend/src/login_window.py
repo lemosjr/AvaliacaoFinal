@@ -264,7 +264,7 @@ class LoginWindow(QMainWindow):
             result = self.auth_connector.login(email, password, remember=remember)
 
             if result['success']:
-                user = result['data']['user']
+                user = result['data'].get('user', result['data'])
                 self.status_bar.showMessage(f"Bem-vindo(a), {user['name']}!", 3000)
 
                 # Emite sinal para abrir a janela principal

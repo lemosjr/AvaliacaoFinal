@@ -9,7 +9,7 @@ from typing import Dict, Any
 
 from backend.service.auth_service import AuthService
 from backend.validation.user_validator import UserValidator
-from backend.utils.exceptions import ValidationError, AuthenticationError, AppException
+from backend.utils.exceptions import ValidationError, AuthenticationError, NotFoundError, AppException
 from backend.utils.jwt_utils import JWTUtils
 
 logger = logging.getLogger(__name__)
@@ -39,12 +39,15 @@ class AuthController:
             # 1. Validate input
             validated = UserValidator.validate_register(data)
 
-            # 2. Call service
-            user, token = self.auth_service.register_user(
+            # 2. Call service (registers the user and returns a User instance)
+            user = self.auth_service.register(
                 name=validated['name'],
                 email=validated['email'],
                 password=validated['password']
             )
+
+            # 3. Generate a JWT token for the new user
+            token = JWTUtils.generate_token(user.id, user.email)
 
             logger.info(f"User registered: {user.email} (ID: {user.id})")
 
@@ -80,7 +83,7 @@ class AuthController:
             validated = UserValidator.validate_login(data)
 
             # 2. Call service
-            user, token = self.auth_service.authenticate_user(
+            user, token = self.auth_service.authenticate(
                 email=validated['email'],
                 password=validated['password']
             )
@@ -153,7 +156,7 @@ class AuthController:
             if not user_id:
                 raise AuthenticationError("Invalid token: missing user_id")
 
-            user = self.auth_service.get_user_by_id(user_id)
+            user = self.auth_service.user_repo.get_by_id(user_id)
             if not user:
                 raise AuthenticationError("User not found")
 
@@ -162,6 +165,9 @@ class AuthController:
         except AuthenticationError as e:
             logger.warning(f"Get current user failed: {str(e)}")
             raise
+        except NotFoundError as e:
+            logger.warning(f"Get current user failed - user not found: {str(e)}")
+            raise AuthenticationError("User not found")
         except Exception as e:
             logger.error(f"Unexpected error in get_current_user: {str(e)}")
             raise AppException("Failed to get current user")
