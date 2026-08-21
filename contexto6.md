@@ -85,7 +85,7 @@ Tecnologias
 Utilize:
 
 - Python;
-- Flask.
+- Pyqt6.
 
 A persistência poderá ser feita utilizando estrutura em memória, arquivo ou banco de dados, desde que seja suficiente para demonstrar as funcionalidades e o processo de manutenção.
 
