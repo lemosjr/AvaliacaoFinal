@@ -50,9 +50,10 @@ class TableWidget(QWidget):
         self.search_input.setStyleSheet("""
             QLineEdit {
                 padding: 8px 12px;
-                border: 1px solid #dcdde1;
+                border: 1px solid #4a6278;
                 border-radius: 6px;
-                background-color: white;
+                background-color: #34495e;
+                color: #ecf0f1;
                 min-width: 200px;
             }
             QLineEdit:focus {
@@ -88,24 +89,29 @@ class TableWidget(QWidget):
         # Estilo
         self.table.setStyleSheet("""
             QTableWidget {
-                background-color: white;
-                border: 1px solid #dcdde1;
+                background-color: #34495e;
+                border: 1px solid #4a6278;
                 border-radius: 6px;
-                gridline-color: #ecf0f1;
+                gridline-color: #4a6278;
+                color: #ecf0f1;
             }
             QTableWidget::item {
                 padding: 8px;
+                color: #ecf0f1;
+            }
+            QTableWidget::item:alternate {
+                background-color: #2c3e50;
             }
             QTableWidget::item:selected {
                 background-color: #3498db;
                 color: white;
             }
             QHeaderView::section {
-                background-color: #f8f9fa;
+                background-color: #2c3e50;
                 padding: 8px;
                 border: none;
                 font-weight: bold;
-                color: #2c3e50;
+                color: #ecf0f1;
             }
         """)
 
@@ -116,7 +122,7 @@ class TableWidget(QWidget):
         # ===== FOOTER =====
         footer = QHBoxLayout()
         self.row_count_label = QLabel("0 registros")
-        self.row_count_label.setStyleSheet("color: #7f8c8d; font-size: 12px;")
+        self.row_count_label.setStyleSheet("color: #95a5a6; font-size: 12px;")
         footer.addWidget(self.row_count_label)
         footer.addStretch()
         layout.addLayout(footer)

@@ -83,7 +83,7 @@ class Order:
         self.id = id
         self.customer = customer
         self.status = status
-        self.total_amount = total_amount
+        self.total_amount = float(total_amount) if total_amount is not None else 0.0
         self.user_id = user_id
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()

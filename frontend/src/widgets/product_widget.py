@@ -36,7 +36,7 @@ class ProductWidget(QFrame):
 
         # ===== NOME DO PRODUTO =====
         name_label = QLabel(self.product_data.get('description', 'Produto'))
-        name_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #2c3e50;")
+        name_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #ecf0f1;")
         name_label.setWordWrap(True)
         layout.addWidget(name_label)
 
@@ -83,13 +83,12 @@ class ProductWidget(QFrame):
         """Aplica estilos ao widget."""
         self.setStyleSheet("""
             QFrame {
-                background-color: white;
-                border: 1px solid #ecf0f1;
+                background-color: #34495e;
+                border: 1px solid #4a6278;
                 border-radius: 12px;
             }
             QFrame:hover {
                 border-color: #3498db;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             }
         """)
 

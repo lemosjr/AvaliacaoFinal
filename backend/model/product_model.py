@@ -33,8 +33,8 @@ class Product:
     ):
         self.id = id
         self.description = description
-        self.price = price
-        self.quantity_available = quantity_available
+        self.price = float(price) if price is not None else 0.0
+        self.quantity_available = int(quantity_available) if quantity_available is not None else 0
         self.user_id = user_id
         self.created_at = created_at or datetime.now()
         self.updated_at = updated_at or datetime.now()
