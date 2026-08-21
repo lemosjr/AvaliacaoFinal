@@ -1,0 +1,95 @@
+/* frontend/src/styles/style.qss */
+/* Estilos globais da aplicação - Dark Theme suave */
+
+QMainWindow {
+    background-color: #2c3e50;
+}
+
+QWidget {
+    background-color: transparent;
+    color: #ecf0f1;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Botões */
+QPushButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #2980b9;
+}
+QPushButton:pressed {
+    background-color: #1c6ea4;
+}
+QPushButton:disabled {
+    background-color: #7f8c8d;
+    color: #bdc3c7;
+}
+
+/* Campos de entrada */
+QLineEdit {
+    background-color: #34495e;
+    border: 1px solid #4a6278;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #ecf0f1;
+}
+QLineEdit:focus {
+    border: 2px solid #3498db;
+}
+QLineEdit::placeholder {
+    color: #95a5a6;
+}
+
+/* Labels */
+QLabel {
+    color: #ecf0f1;
+}
+QLabel[color="muted"] {
+    color: #95a5a6;
+}
+
+/* Checkbox */
+QCheckBox {
+    color: #ecf0f1;
+}
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+}
+QCheckBox::indicator:unchecked {
+    background-color: #34495e;
+    border: 2px solid #4a6278;
+    border-radius: 4px;
+}
+QCheckBox::indicator:checked {
+    background-color: #3498db;
+    border: 2px solid #3498db;
+    border-radius: 4px;
+}
+
+/* Tabelas */
+QTableWidget {
+    background-color: #34495e;
+    border: 1px solid #4a6278;
+    border-radius: 6px;
+    gridline-color: #4a6278;
+}
+QHeaderView::section {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 8px;
+    border: none;
+}
+QTableWidget::item {
+    padding: 6px;
+}
+QTableWidget::item:selected {
+    background-color: #3498db;
+}
