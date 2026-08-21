@@ -70,11 +70,13 @@ class Database:
             logger.info("✅ Database connection pool created successfully")
             
             # Test connection
-            with self._pool.getconn() as conn:
+            conn = self._pool.getconn()
+            try:
                 with conn.cursor() as cur:
                     cur.execute("SELECT version()")
                     version = cur.fetchone()[0]
                     logger.info(f"✅ Connected to PostgreSQL: {version[:50]}...")
+            finally:
                 self._pool.putconn(conn)
                 
         except Exception as e:

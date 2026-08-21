@@ -129,9 +129,7 @@ class OrderRepository(BaseRepository[Order]):
             with db.get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(query, (order_id,))
-                    conn.commit()
-                    
-                    # Fetch updated order
+                    # get_connection context manager commits automatically
                     return self.get_by_id(order_id)
         except Exception as e:
             logger.error(f"Error updating total amount for order {order_id}: {str(e)}")
