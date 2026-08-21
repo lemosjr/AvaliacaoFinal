@@ -206,7 +206,8 @@ class MainWindow(QMainWindow):
         recent_label.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {TEXT_PRIMARY};")
         layout.addWidget(recent_label)
 
-        self.recent_orders_table = TableWidget(headers=["ID", "Cliente", "Status", "Total", "Data"])
+        self.recent_orders_table = TableWidget(headers=["id", "customer", "status", "total", "date"],
+                                               display_headers=["ID", "Cliente", "Status", "Total", "Data"])
         self.recent_orders_table.set_status_filter_visible(False)
         self.recent_orders_table.item_selected.connect(self._on_order_selected)
         self.recent_orders_table.setMinimumHeight(200)
@@ -266,7 +267,8 @@ class MainWindow(QMainWindow):
         toolbar.addStretch()
         layout.addLayout(toolbar)
 
-        self.products_table = TableWidget(headers=["ID", "Descrição", "Preço", "Estoque", "Data"])
+        self.products_table = TableWidget(headers=["id", "description", "price", "quantity_available", "date"],
+                                           display_headers=["ID", "Descrição", "Preço", "Estoque", "Data"])
         self.products_table.item_selected.connect(self._on_product_selected)
         layout.addWidget(self.products_table)
         return widget
@@ -288,7 +290,8 @@ class MainWindow(QMainWindow):
         toolbar.addStretch()
         layout.addLayout(toolbar)
 
-        self.orders_table = TableWidget(headers=["ID", "Cliente", "Status", "Total", "Itens", "Data"])
+        self.orders_table = TableWidget(headers=["id", "customer", "status", "total", "items", "date"],
+                                         display_headers=["ID", "Cliente", "Status", "Total", "Itens", "Data"])
         self.orders_table.set_status_filter_visible(True)
         self.orders_table.item_selected.connect(self._on_order_selected)
         layout.addWidget(self.orders_table)
