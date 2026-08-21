@@ -151,8 +151,6 @@ class AddProductDialog(QDialog):
 
         # Enter key triggers save
         self.desc_input.returnPressed.connect(self.handle_save)
-        self.price_input.returnPressed.connect(self.handle_save)
-        self.qty_input.returnPressed.connect(self.handle_save)
 
     def load_product_data(self):
         """Loads existing product data for editing."""
@@ -192,10 +190,14 @@ class AddProductDialog(QDialog):
                     data
                 )
             else:
-                result = self.product_connector.create_product(data)
+                result = self.product_connector.create_product(
+                    description=data['description'],
+                    price=data['price'],
+                    quantity_available=data['quantity_available']
+                )
 
             if result['success']:
-                product = result['data']
+                product = result['data'].get('product', result['data'])
                 self.status_label.setText("✅ Produto salvo com sucesso!")
                 self.product_saved.emit(product)
 

@@ -192,7 +192,7 @@ class CreateOrderDialog(QDialog):
         try:
             result = self.product_connector.list_products()
             if result['success']:
-                self.products = result['data']
+                self.products = result['data'].get('products', [])
                 self.product_combo.clear()
                 for p in self.products:
                     self.product_combo.addItem(
@@ -347,20 +347,14 @@ class CreateOrderDialog(QDialog):
             for item in self.selected_items
         ]
 
-        data = {
-            'customer': customer,
-            'items': items,
-            'user_id': self.user_id
-        }
-
         # Disable buttons
         self._set_loading(True)
 
         try:
-            result = self.order_connector.create_order(data)
+            result = self.order_connector.create_order(customer, items)
 
             if result['success']:
-                order = result['data']
+                order = result['data'].get('order', result['data'])
                 self.status_label.setText("✅ Pedido criado com sucesso!")
 
                 # Emit signal and global event

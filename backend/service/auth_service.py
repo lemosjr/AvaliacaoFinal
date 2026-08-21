@@ -37,14 +37,13 @@ class AuthService:
         # Hash password
         password_hash = HashUtils.hash_password(validated['password'])
         
-        # Create user
-        user = User(
-            email=validated['email'],
-            password_hash=password_hash,
-            name=validated['name']
-        )
-        
-        created = self.user_repo.create(user)
+        # Create user (only real database columns; password_hash is required)
+        created = self.user_repo.create({
+            'email': validated['email'],
+            'password_hash': password_hash,
+            'name': validated['name'],
+            'is_active': True
+        })
         logger.info(f"User registered: {created.email}")
         return created
 

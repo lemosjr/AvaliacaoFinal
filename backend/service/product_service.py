@@ -7,6 +7,11 @@ from typing import List, Optional, Dict, Any
 from backend.repository.product_repository import ProductRepository
 from backend.model.product_model import Product
 from backend.service.validation_service import ValidationService
+from backend.utils.validators import (
+    validate_non_empty_string,
+    validate_price,
+    validate_non_negative_number
+)
 from backend.utils.exceptions import NotFoundError, ValidationError, BusinessRuleError
 from backend.utils.logger import logger
 
@@ -27,15 +32,13 @@ class ProductService:
         # Validate
         validated = self.validator.validate_product_data(description, price, quantity_available)
         
-        # Create product
-        product = Product(
-            description=validated['description'],
-            price=validated['price'],
-            quantity_available=validated['quantity_available'],
-            user_id=user_id
-        )
-        
-        created = self.product_repo.create(product)
+        # Create product (only real database columns)
+        created = self.product_repo.create({
+            'description': validated['description'],
+            'price': validated['price'],
+            'quantity_available': validated['quantity_available'],
+            'user_id': user_id
+        })
         logger.info(f"Product created: {created.id} - {created.description}")
         return created
 
@@ -65,11 +68,11 @@ class ProductService:
         # Validate fields that are provided
         validated_data = {}
         if 'description' in data:
-            validated_data['description'] = self.validator.validate_non_empty_string(data['description'], "Description")
+            validated_data['description'] = validate_non_empty_string(data['description'], "Description")
         if 'price' in data:
-            validated_data['price'] = self.validator.validate_price(data['price'])
+            validated_data['price'] = validate_price(data['price'])
         if 'quantity_available' in data:
-            validated_data['quantity_available'] = int(self.validator.validate_non_negative_number(data['quantity_available'], "Quantity"))
+            validated_data['quantity_available'] = int(validate_non_negative_number(data['quantity_available'], "Quantity"))
         
         if not validated_data:
             raise ValidationError("No valid fields to update")

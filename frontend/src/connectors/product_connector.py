@@ -51,7 +51,7 @@ class ProductConnector(BaseConnector):
         )
 
         if result['success']:
-            event_bus.emit('product_created', result['data']['product'])
+            event_bus.emit('product_created', result['data'].get('product', result['data']))
             logger.info(f"Product created: {description}")
 
         return result
@@ -90,7 +90,7 @@ class ProductConnector(BaseConnector):
 
         if result['success']:
             # Atualiza a lista no cache do evento
-            event_bus.emit('products_loaded', result['data']['products'])
+            event_bus.emit('products_loaded', result['data'].get('products', []))
 
         return result
 
@@ -116,7 +116,7 @@ class ProductConnector(BaseConnector):
         )
 
         if result['success']:
-            event_bus.emit('product_updated', result['data']['product'])
+            event_bus.emit('product_updated', result['data'].get('product', result['data']))
             logger.info(f"Product updated: {product_id}")
 
         return result

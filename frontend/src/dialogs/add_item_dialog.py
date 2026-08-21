@@ -128,7 +128,7 @@ class AddItemDialog(QDialog):
         try:
             result = self.product_connector.list_products()
             if result['success']:
-                self.products = result['data']
+                self.products = result['data'].get('products', [])
                 self.product_combo.clear()
                 for p in self.products:
                     self.product_combo.addItem(
@@ -184,13 +184,14 @@ class AddItemDialog(QDialog):
         self._set_loading(True)
 
         try:
-            result = self.order_connector.add_item(
+            result = self.order_connector.add_item_to_order(
                 self.order_id,
-                {'product_id': product_id, 'quantity': quantity}
+                product_id,
+                quantity
             )
 
             if result['success']:
-                order = result['data']
+                order = result['data'].get('order', result['data'])
                 self.status_label.setText("✅ Item adicionado com sucesso!")
 
                 # Emit signal and global event

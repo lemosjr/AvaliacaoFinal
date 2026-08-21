@@ -30,6 +30,7 @@ class TableWidget(QWidget):
         self.headers = headers
         self.data = []
         self.actions = {}
+        self.id_field = 'id'
 
         self.setup_ui()
 
